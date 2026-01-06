@@ -2,12 +2,14 @@ import {
     ICredentialTestRequest,
     ICredentialType,
     INodeProperties,
+    Icon,
 } from 'n8n-workflow';
 
 export class PlankaApi implements ICredentialType {
     name = 'plankaApi';
     displayName = 'Planka API';
     documentationUrl = 'https://github.com/plankanban/planka';
+    icon: Icon = { light: 'file:../icons/planka.svg', dark: 'file:../icons/planka.dark.svg' };
 
     // Define the fields
     properties: INodeProperties[] = [
