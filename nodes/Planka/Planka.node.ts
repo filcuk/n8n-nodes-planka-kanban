@@ -227,7 +227,7 @@ export class Planka implements INodeType {
                 displayOptions: {
                     show: {
                         resource: ['card'],
-                        operation: ['create', 'getAll'],
+                        operation: ['create', 'getAll', 'update'],
                     },
                 },
             },
@@ -362,6 +362,7 @@ export class Planka implements INodeType {
                 name: 'position',
                 type: 'number',
                 default: 65536,
+                required: true,
                 displayOptions: {
                     show: {
                         resource: ['board', 'list', 'card'],
@@ -620,12 +621,15 @@ export class Planka implements INodeType {
                         options.url = `${baseUrl}/api/lists/${listId}/cards`;
                     }
                     else if (operation === 'update') {
+                        const listId = this.getNodeParameter('listId', i);
                         const id = this.getNodeParameter('cardId', i);
                         const name = this.getNodeParameter('name', i);
                         const description = this.getNodeParameter('description', i);
+                        const position = this.getNodeParameter('position', i);
+
                         options.method = 'PATCH';
                         options.url = `${baseUrl}/api/cards/${id}`;
-                        options.body = { name, description };
+                        options.body = { listId, name, description, position };
                     }
                     else if (operation === 'delete') {
                         const id = this.getNodeParameter('cardId', i);
