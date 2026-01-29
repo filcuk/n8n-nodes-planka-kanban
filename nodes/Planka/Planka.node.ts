@@ -7,8 +7,6 @@ import {
     IHttpRequestOptions,
 } from 'n8n-workflow';
 
-
-
 export class Planka implements INodeType {
     description: INodeTypeDescription = {
         displayName: 'Planka',
@@ -117,7 +115,7 @@ export class Planka implements INodeType {
                     { name: 'Create', value: 'create', description: 'Create a card in a list', action: 'Create a card',},
                     { name: 'Delete', value: 'delete', description: 'Delete a card', action: 'Delete a card',},
                     { name: 'Get', value: 'get', description: 'Get a card by ID', action: 'Get a card',},
-                    { name: 'Get Many', value: 'getAll', description: 'Get many Cards in a list', action: 'Get many a card',},
+                    { name: 'Get Many', value: 'getAll', description: 'Get many Cards in a list', action: 'Get many cards',},
                     { name: 'Update', value: 'update', description: 'Update a card', action: 'Update a card',},
                     { name: 'Duplicate', value: 'duplicate', description: 'Duplicate a card', action: 'Duplicate a card',},
                 ],
@@ -350,7 +348,7 @@ export class Planka implements INodeType {
                 },
             },
             {
-                displayName: 'TaskList ID',
+                displayName: 'Tasklist ID',
                 name: 'tasklistId',
                 type: 'string',
                 default: '',
@@ -628,7 +626,7 @@ export class Planka implements INodeType {
                 },
             },
         ],
-		usableAsTool: true,
+        usableAsTool: true,
     };
 
     async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -656,7 +654,9 @@ export class Planka implements INodeType {
                 const accessToken = loginResponse.item;
                 if (!accessToken) throw new NodeApiError(this.getNode(), loginResponse, { message: 'Authentication Failed: Could not retrieve access token.' });
 
-                // PREPARE REQUEST
+                // Remove trailing slash if present to prevent double slashes (e.g. //api)
+                const baseUrl = (credentials.baseUrl as string).replace(/\/$/, '');
+
                 const options: IHttpRequestOptions = {
                     headers: {
                         'Accept': 'application/json',
@@ -665,7 +665,6 @@ export class Planka implements INodeType {
                     json: true,
                     url: '',
                 };
-                const baseUrl = credentials.baseUrl;
 
                 // ----------------------------------------
                 // RESOURCE: PROJECT
@@ -945,40 +944,40 @@ export class Planka implements INodeType {
                         options.body = { name, position };
                     }
                     else if (operation === 'delete') {
-                        const tasklistID = this.getNodeParameter('tasklistId', i);
+                        const tasklistId = this.getNodeParameter('tasklistId', i);
 
                         options.method = 'DELETE';
-                        options.url = `${baseUrl}/api/task-lists/${tasklistID}`;
+                        options.url = `${baseUrl}/api/task-lists/${tasklistId}`;
                     }
                     else if (operation === 'get') {
-                        const tasklistID = this.getNodeParameter('tasklistId', i);
+                        const tasklistId = this.getNodeParameter('tasklistId', i);
 
                         options.method = 'GET';
-                        options.url = `${baseUrl}/api/task-lists/${tasklistID}`;
+                        options.url = `${baseUrl}/api/task-lists/${tasklistId}`;
                     }
                     else if (operation === 'update') {
-                        const tasklistID = this.getNodeParameter('tasklistId', i);
+                        const tasklistId = this.getNodeParameter('tasklistId', i);
                         const name = this.getNodeParameter('name', i);
                         const position = this.getNodeParameter('position', i);
 
                         options.method = 'PATCH';
-                        options.url = `${baseUrl}/api/task-lists/${tasklistID}`;
+                        options.url = `${baseUrl}/api/task-lists/${tasklistId}`;
                         options.body = { name, position };
                     }
                 }
 
-                // ----------------------------------------
-                // RESOURCE: TASK
+                    // ----------------------------------------
+                    // RESOURCE: TASK
                 // ----------------------------------------
                 else if (resource === 'task') {
                     if (operation === 'create') {
-                        const tasklistID = this.getNodeParameter('tasklistId', i);
+                        const tasklistId = this.getNodeParameter('tasklistId', i);
                         const name = this.getNodeParameter('name', i);
                         const position = this.getNodeParameter('position', i);
                         const isCompleted = this.getNodeParameter('isCompleted', i);
 
                         options.method = 'POST';
-                        options.url = `${baseUrl}/api/task-lists/${tasklistID}/tasks`;
+                        options.url = `${baseUrl}/api/task-lists/${tasklistId}/tasks`;
                         options.body = { name, position, isCompleted };
                     }
                     else if (operation === 'delete') {
