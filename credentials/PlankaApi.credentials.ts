@@ -17,14 +17,14 @@ export class PlankaApi implements ICredentialType {
             displayName: 'Base URL',
             name: 'baseUrl',
             type: 'string',
-            default: 'http://localhost:3000',
+            default: 'http://192.168.178.26:3001/',
             description: 'The URL of your Planka instance (e.g. http://localhost:3000)',
         },
         {
             displayName: 'Email or Username',
             name: 'emailOrUsername',
             type: 'string',
-            default: '',
+            default: 'demo@demo.demo',
         },
         {
             displayName: 'Password',
@@ -33,7 +33,7 @@ export class PlankaApi implements ICredentialType {
             typeOptions: {
                 password: true,
             },
-            default: '',
+            default: 'Jack',
         },
     ];
 

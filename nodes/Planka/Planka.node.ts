@@ -41,12 +41,14 @@ export class Planka implements INodeType {
                 type: 'options',
                 noDataExpression: true,
                 options: [
+                    { name: 'Project', value: 'project' },
                     { name: 'Board', value: 'board' },
+                    { name: 'List', value: 'list' },
+                    { name: 'Label', value: 'label' },
                     { name: 'Card', value: 'card' },
                     { name: 'Comment', value: 'comment' },
-                    { name: 'Label', value: 'label' },
-                    { name: 'List', value: 'list' },
-                    { name: 'Project', value: 'project' },
+                    { name: 'Tasklist', value: 'tasklist' },
+                    { name: 'Task', value: 'task' },
                 ],
                 default: 'project',
             },
@@ -117,6 +119,7 @@ export class Planka implements INodeType {
                     { name: 'Get', value: 'get', description: 'Get a card by ID', action: 'Get a card',},
                     { name: 'Get Many', value: 'getAll', description: 'Get many Cards in a list', action: 'Get many a card',},
                     { name: 'Update', value: 'update', description: 'Update a card', action: 'Update a card',},
+                    { name: 'Duplicate', value: 'duplicate', description: 'Duplicate a card', action: 'Duplicate a card',},
                 ],
                 default: 'create',
             },
@@ -152,6 +155,37 @@ export class Planka implements INodeType {
                     { name: 'Update Label', value: 'update', description: 'Update an existing label', action: 'Update label',},
                 ],
                 default: 'addToCard',
+            },
+
+            // TASK LIST
+            {
+                displayName: 'Operation',
+                name: 'operation',
+                type: 'options',
+                noDataExpression: true,
+                displayOptions: { show: { resource: ['tasklist'] } },
+                options: [
+                    { name: 'Create a Task list', value: 'create', description: 'Create a new task list', action: 'Create Tasklist',},
+                    { name: 'Delete Task list', value: 'delete', description: 'Delete a task list', action: 'Delete Tasklist',},
+                    { name: 'Get Task list', value: 'get', description: 'Get tasklist details', action: 'Get Tasklist details',},
+                    { name: 'Update Task list', value: 'update', description: 'Update tasklist details', action: 'Update Tasklist',},
+                ],
+                default: 'create',
+            },
+
+            // TASK
+            {
+                displayName: 'Operation',
+                name: 'operation',
+                type: 'options',
+                noDataExpression: true,
+                displayOptions: { show: { resource: ['task'] } },
+                options: [
+                    { name: 'Create a Task', value: 'create', description: 'create a new task', action: 'Create Task',},
+                    { name: 'Delete Task', value: 'delete', description: 'delete a task', action: 'Delete Task',},
+                    { name: 'Update Task', value: 'update', description: 'update a task', action: 'Update Task',},
+                ],
+                default: 'create',
             },
 
             // ----------------------------------
@@ -239,7 +273,7 @@ export class Planka implements INodeType {
                 displayOptions: {
                     show: {
                         resource: ['card'],
-                        operation: ['delete', 'get', 'update'],
+                        operation: ['delete', 'get', 'update', "duplicate"],
                     }
                 },
             },
@@ -268,6 +302,18 @@ export class Planka implements INodeType {
                 },
             },
             {
+                displayName: 'Card ID',
+                name: 'cardId',
+                type: 'string',
+                default: '',
+                displayOptions: {
+                    show: {
+                        resource: ["tasklist"],
+                        operation: ['create'],
+                    }
+                },
+            },
+            {
                 displayName: 'Comment ID',
                 name: 'commentId',
                 type: 'string',
@@ -291,7 +337,42 @@ export class Planka implements INodeType {
                     },
                 },
             },
-
+            {
+                displayName: 'Tasklist ID',
+                name: 'tasklistId',
+                type: 'string',
+                default: '',
+                displayOptions: {
+                    show: {
+                        resource: ['tasklist'],
+                        operation: ['delete', 'get', 'update'],
+                    },
+                },
+            },
+            {
+                displayName: 'TaskList ID',
+                name: 'tasklistId',
+                type: 'string',
+                default: '',
+                displayOptions: {
+                    show: {
+                        resource: ['task'],
+                        operation: ['create'],
+                    },
+                },
+            },
+            {
+                displayName: 'Task ID',
+                name: 'taskId',
+                type: 'string',
+                default: '',
+                displayOptions: {
+                    show: {
+                        resource: ['task'],
+                        operation: ['delete', 'update'],
+                    },
+                },
+            },
 
             // ----------------------------------
             //         Other Data Fields
@@ -304,18 +385,19 @@ export class Planka implements INodeType {
                 required: true,
                 displayOptions: {
                     show: {
-                        operation: ['create', 'update'],
-                        resource: ['project', 'board', 'list', 'card', 'label'],
+                        operation: ['create', 'update', 'duplicate'],
+                        resource: ['project', 'board', 'list', 'card', 'label', "task", "tasklist"],
                     },
                 },
                 description: 'The name or title of the resource',
             },
             {
-                displayName: 'Project Privacy',
+                displayName: 'Project Type',
                 name: 'projectType',
                 type: 'options',
                 options: [
                     { name: 'Private', value: 'private' },
+                    { name: 'Shared', value: 'shared' },
                 ],
                 default: 'private',
                 required: true,
@@ -328,12 +410,49 @@ export class Planka implements INodeType {
                 description: 'Required by Planka API',
             },
             {
+                displayName: 'Default View',
+                name: 'defaultView',
+                type: 'options',
+                options: [
+                    { name: 'Kanban', value: 'kanban' },
+                    { name: 'Grid', value: 'grid' },
+                    { name: 'List', value: 'list' },
+                ],
+                default: 'kanban',
+                required: true,
+                displayOptions: {
+                    show: {
+                        operation: ['update'],
+                        resource: ['board'],
+                    },
+                },
+                description: 'The name or title of the resource',
+            },
+            {
+                displayName: 'Default Card Type',
+                name: 'defaultCardType',
+                type: 'options',
+                options: [
+                    { name: 'Project', value: 'project' },
+                    { name: 'Story', value: 'story' },
+                ],
+                default: 'project',
+                required: true,
+                displayOptions: {
+                    show: {
+                        operation: ['update'],
+                        resource: ['board'],
+                    },
+                },
+                description: 'The name or title of the resource',
+            },
+            {
                 displayName: 'List Type',
                 name: 'listType',
                 type: 'options',
                 options: [
                     { name: 'Active', value: 'active' },
-                    { name: 'Completed', value: 'completed' },
+                    { name: 'Closed', value: 'closed' },
                 ],
                 default: 'active',
                 required: true,
@@ -358,6 +477,37 @@ export class Planka implements INodeType {
                 },
             },
             {
+                displayName: 'Due Date',
+                name: 'dueDate',
+                type: 'dateTime',
+                default: '',
+                required: false,
+                description: 'Select the date and time (ISO 8601 format)',
+                displayOptions: {
+                    show: {
+                        operation: ['create', 'update'],
+                        resource: ['card'],
+                    },
+                },
+            },
+            {
+                displayName: 'Type',
+                name: 'type',
+                type: 'options',
+                options: [
+                    { name: 'Project', value: 'project' },
+                    { name: 'Story', value: 'story' },
+                ],
+                default: 'project',
+                required: true,
+                displayOptions: {
+                    show: {
+                        operation: ['create', 'update'],
+                        resource: ['card'],
+                    },
+                },
+            },
+            {
                 displayName: 'Position',
                 name: 'position',
                 type: 'number',
@@ -365,8 +515,8 @@ export class Planka implements INodeType {
                 required: true,
                 displayOptions: {
                     show: {
-                        resource: ['board', 'list', 'card'],
-                        operation: ['create', 'update'],
+                        resource: ['board', 'list', 'card', "task", "tasklist"],
+                        operation: ['create', 'update', 'duplicate'],
                     },
                 },
                 description: 'Sort order (default: 65536)',
@@ -429,6 +579,31 @@ export class Planka implements INodeType {
                 },
             },
             {
+                displayName: 'Color',
+                name: 'color',
+                type: 'options',
+                options: [
+                    { name: 'Antique Blue', value: 'antique-blue' },
+                    { name: 'Berry Red', value: 'berry-red' },
+                    { name: 'Bright Moss', value: 'bright-moss' },
+                    { name: 'Dark Granite', value: 'dark-granite' },
+                    { name: 'Lagoon Blue', value: 'lagoon-blue' },
+                    { name: 'Light Mud', value: 'light-mud' },
+                    { name: 'Orange Peel', value: 'orange-peel' },
+                    { name: 'Pink Tulip', value: 'pink-tulip' },
+                    { name: 'Pumpkin Orange', value: 'pumpkin-orange' },
+                    { name: 'Turquoise Sea', value: 'turquoise-sea' },
+                ],
+                default: 'berry-red',
+                required: true,
+                displayOptions: {
+                    show: {
+                        resource: ['list'],
+                        operation: ['update'],
+                    },
+                },
+            },
+            {
                 displayName: 'Comment Text',
                 name: 'text',
                 type: 'string',
@@ -436,6 +611,18 @@ export class Planka implements INodeType {
                 displayOptions: {
                     show: {
                         resource: ['comment'],
+                        operation: ['create', 'update'],
+                    },
+                },
+            },
+            {
+                displayName: 'Is Task completed',
+                name: 'isCompleted',
+                type: 'boolean',
+                default: false,
+                displayOptions: {
+                    show: {
+                        resource: ['task'],
                         operation: ['create', 'update'],
                     },
                 },
@@ -454,7 +641,7 @@ export class Planka implements INodeType {
             try {
                 const credentials = await this.getCredentials('plankaApi');
 
-                // 1. LOGIN
+                // LOGIN
                 const loginOptions: IHttpRequestOptions = {
                     method: 'POST',
                     url: `${credentials.baseUrl}/api/access-tokens`,
@@ -469,7 +656,7 @@ export class Planka implements INodeType {
                 const accessToken = loginResponse.item;
                 if (!accessToken) throw new NodeApiError(this.getNode(), loginResponse, { message: 'Authentication Failed: Could not retrieve access token.' });
 
-                // 2. PREPARE REQUEST
+                // PREPARE REQUEST
                 const options: IHttpRequestOptions = {
                     headers: {
                         'Accept': 'application/json',
@@ -495,14 +682,14 @@ export class Planka implements INodeType {
                     }
                     else if (operation === 'create') {
                         const name = this.getNodeParameter('name', i);
-                        const type = this.getNodeParameter('projectType', i); // REQUIRED
+                        const type = this.getNodeParameter('projectType', i);
                         const description = this.getNodeParameter('description', i);
 
                         options.method = 'POST';
                         options.url = `${baseUrl}/api/projects`;
                         options.body = {
                             name,
-                            type, // "private"
+                            type,
                             description
                         };
                     }
@@ -544,9 +731,12 @@ export class Planka implements INodeType {
                         const id = this.getNodeParameter('boardId', i);
                         const name = this.getNodeParameter('name', i);
                         const position = this.getNodeParameter('position', i);
+                        const defaultCardType = this.getNodeParameter('defaultCardType', i);
+                        const defaultView = this.getNodeParameter('defaultView', i);
+
                         options.method = 'PATCH';
                         options.url = `${baseUrl}/api/boards/${id}`;
-                        options.body = { name, position };
+                        options.body = { name, position, defaultCardType, defaultView };
                     }
                     else if (operation === 'delete') {
                         const id = this.getNodeParameter('boardId', i);
@@ -563,7 +753,7 @@ export class Planka implements INodeType {
                         const boardId = this.getNodeParameter('boardId', i);
                         const name = this.getNodeParameter('name', i);
                         const position = this.getNodeParameter('position', i);
-                        const type = this.getNodeParameter('listType', i); // REQUIRED ("active")
+                        const type = this.getNodeParameter('listType', i);
 
                         options.method = 'POST';
                         options.url = `${baseUrl}/api/boards/${boardId}/lists`;
@@ -578,9 +768,11 @@ export class Planka implements INodeType {
                         const id = this.getNodeParameter('listId', i);
                         const name = this.getNodeParameter('name', i);
                         const position = this.getNodeParameter('position', i);
+                        const color = this.getNodeParameter('color', i);
+
                         options.method = 'PATCH';
                         options.url = `${baseUrl}/api/lists/${id}`;
-                        options.body = { name, position };
+                        options.body = { name, position, color };
                     }
                     else if (operation === 'delete') {
                         const id = this.getNodeParameter('listId', i);
@@ -598,22 +790,36 @@ export class Planka implements INodeType {
                         const name = this.getNodeParameter('name', i);
                         const position = this.getNodeParameter('position', i);
                         const description = this.getNodeParameter('description', i);
+                        const type = this.getNodeParameter('type', i);
+                        const dueDate = this.getNodeParameter('dueDate', i);
 
                         options.method = 'POST';
                         options.url = `${baseUrl}/api/lists/${listId}/cards`;
 
-                        // CHANGE: Add "type": "card" here
                         options.body = {
                             name,
                             position,
                             description,
-                            type: 'project' // <--- REQUIRED BY YOUR SERVER todo
+                            type,
                         };
+
+                        if (dueDate) {
+                            options.body.dueDate = dueDate;
+                        }
                     }
                     else if (operation === 'get') {
                         const id = this.getNodeParameter('cardId', i);
                         options.method = 'GET';
                         options.url = `${baseUrl}/api/cards/${id}`;
+                    }
+                    else if (operation === 'duplicate') {
+                        const id = this.getNodeParameter('cardId', i);
+                        const name = this.getNodeParameter('name', i);
+                        const position = this.getNodeParameter('position', i);
+
+                        options.method = 'POST';
+                        options.url = `${baseUrl}/api/cards/${id}/duplicate`;
+                        options.body = { position, name };
                     }
                     else if (operation === 'getAll') {
                         const listId = this.getNodeParameter('listId', i);
@@ -626,10 +832,16 @@ export class Planka implements INodeType {
                         const name = this.getNodeParameter('name', i);
                         const description = this.getNodeParameter('description', i);
                         const position = this.getNodeParameter('position', i);
+                        const type = this.getNodeParameter('type', i);
+                        const dueDate = this.getNodeParameter('dueDate', i);
 
                         options.method = 'PATCH';
                         options.url = `${baseUrl}/api/cards/${id}`;
-                        options.body = { listId, name, description, position };
+                        options.body = { listId, name, description, position, type };
+
+                        if (dueDate) {
+                            options.body.dueDate = dueDate;
+                        }
                     }
                     else if (operation === 'delete') {
                         const id = this.getNodeParameter('cardId', i);
@@ -661,8 +873,15 @@ export class Planka implements INodeType {
                     }
                     else if (operation === 'getAll') {
                         const cardId = this.getNodeParameter('cardId', i);
+
                         options.method = 'GET';
                         options.url = `${baseUrl}/api/cards/${cardId}/comments`;
+                    }
+                    else if (operation === 'delete') {
+                        const commentId = this.getNodeParameter('commentId', i);
+
+                        options.method = 'DELETE';
+                        options.url = `${baseUrl}/api/comments/${commentId}`;
                     }
                 }
 
@@ -712,6 +931,73 @@ export class Planka implements INodeType {
                     }
                 }
 
+                // ----------------------------------------
+                // RESOURCE: TASKLIST
+                // ----------------------------------------
+                else if (resource === 'tasklist') {
+                    if (operation === 'create') {
+                        const cardId = this.getNodeParameter('cardId', i);
+                        const name = this.getNodeParameter('name', i);
+                        const position = this.getNodeParameter('position', i);
+
+                        options.method = 'POST';
+                        options.url = `${baseUrl}/api/cards/${cardId}/task-lists`;
+                        options.body = { name, position };
+                    }
+                    else if (operation === 'delete') {
+                        const tasklistID = this.getNodeParameter('tasklistId', i);
+
+                        options.method = 'DELETE';
+                        options.url = `${baseUrl}/api/task-lists/${tasklistID}`;
+                    }
+                    else if (operation === 'get') {
+                        const tasklistID = this.getNodeParameter('tasklistId', i);
+
+                        options.method = 'GET';
+                        options.url = `${baseUrl}/api/task-lists/${tasklistID}`;
+                    }
+                    else if (operation === 'update') {
+                        const tasklistID = this.getNodeParameter('tasklistId', i);
+                        const name = this.getNodeParameter('name', i);
+                        const position = this.getNodeParameter('position', i);
+
+                        options.method = 'PATCH';
+                        options.url = `${baseUrl}/api/task-lists/${tasklistID}`;
+                        options.body = { name, position };
+                    }
+                }
+
+                // ----------------------------------------
+                // RESOURCE: TASK
+                // ----------------------------------------
+                else if (resource === 'task') {
+                    if (operation === 'create') {
+                        const tasklistID = this.getNodeParameter('tasklistId', i);
+                        const name = this.getNodeParameter('name', i);
+                        const position = this.getNodeParameter('position', i);
+                        const isCompleted = this.getNodeParameter('isCompleted', i);
+
+                        options.method = 'POST';
+                        options.url = `${baseUrl}/api/task-lists/${tasklistID}/tasks`;
+                        options.body = { name, position, isCompleted };
+                    }
+                    else if (operation === 'delete') {
+                        const taskId = this.getNodeParameter('taskId', i);
+
+                        options.method = 'DELETE';
+                        options.url = `${baseUrl}/api/tasks/${taskId}`;
+                    }
+                    else if (operation === 'update') {
+                        const taskId = this.getNodeParameter('taskId', i);
+                        const name = this.getNodeParameter('name', i);
+                        const position = this.getNodeParameter('position', i);
+                        const isCompleted = this.getNodeParameter('isCompleted', i);
+
+                        options.method = 'PATCH';
+                        options.url = `${baseUrl}/api/tasks/${taskId}`;
+                        options.body = { name, position, isCompleted };
+                    }
+                }
                 const responseData = await this.helpers.httpRequest(options);
                 returnData.push({ json: responseData });
 
