@@ -822,8 +822,49 @@ export class Planka implements INodeType {
                     }
                     else if (operation === 'getAll') {
                         const listId = this.getNodeParameter('listId', i);
+
+                        let cursorListChangedAt = null;
+                        let cursorId = null;
+                        const allItems = [];
+                        const seenIds = new Set();
+
                         options.method = 'GET';
                         options.url = `${baseUrl}/api/lists/${listId}/cards`;
+
+                        do {
+                            options.qs = { ...options.qs };
+
+                            if (cursorListChangedAt && cursorId) {
+                                options.qs['before[listChangedAt]'] = cursorListChangedAt;
+                                options.qs['before[id]'] = cursorId;
+                            }
+
+                            const response = await this.helpers.httpRequestWithAuthentication.call(this, 'plankaApi', options);
+
+                            const items = response.items || [];
+                            if (items.length === 0) break;
+
+                            // Deduplicate and aggregate
+                            for (const item of items) {
+                                if (!seenIds.has(item.id)) {
+                                    seenIds.add(item.id);
+                                    allItems.push(item);
+                                }
+                            }
+
+                            const lastItem = items[items.length - 1];
+                            cursorListChangedAt = lastItem.listChangedAt;
+                            cursorId = lastItem.id;
+
+                        } while (true);
+
+                        const executionData = this.helpers.constructExecutionMetaData(
+                            this.helpers.returnJsonArray(allItems),
+                            { itemData: { item: i } }
+                        );
+
+                        returnData.push(...executionData);
+                        continue;
                     }
                     else if (operation === 'update') {
                         const listId = this.getNodeParameter('listId', i);
