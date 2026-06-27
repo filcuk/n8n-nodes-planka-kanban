@@ -95,12 +95,32 @@ npm run dev
 
 ## Publishing
 
+### Automated (recommended)
+
+Publishing runs when you [create a GitHub Release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository#creating-a-release):
+
+1. Bump the version in `package.json` and tag the release (e.g. `v1.1.2`).
+2. Publish the release on GitHub — the **Publish** workflow will:
+   - Publish `@filcuk/n8n-nodes-planka-kanban` to [GitHub Packages](https://github.com/filcuk/n8n-nodes-planka-v2/pkgs/npm/n8n-nodes-planka-kanban)
+   - Publish `n8n-nodes-planka-kanban` to npm if the `NPM_TOKEN` repository secret is set
+
+To enable npm publishing from CI, add an [npm access token](https://docs.npmjs.com/creating-and-viewing-access-tokens) as the `NPM_TOKEN` secret in **Settings → Secrets and variables → Actions**.
+
+### Manual
+
 ```bash
 npm login   # as filcuk on npmjs.com
 npm publish
 ```
 
 `prepublishOnly` runs build and lint automatically before publish.
+
+To publish to GitHub Packages manually, scope the name and authenticate with a GitHub token:
+
+```bash
+npm pkg set name=@filcuk/n8n-nodes-planka-kanban
+npm publish --registry=https://npm.pkg.github.com
+```
 
 ## Resources
 
