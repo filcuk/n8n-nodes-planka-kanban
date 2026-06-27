@@ -1,4 +1,4 @@
-# n8n-nodes-planka-v2
+# n8n-nodes-planka-kanban
 
 n8n community node for [Planka](https://github.com/plankanban/planka) v2. It exposes the full Planka REST API (100 endpoints) for workflow automation — projects, boards, cards, custom fields, attachments, notifications, users, webhooks, and more.
 
@@ -13,12 +13,12 @@ Follow the [n8n community nodes installation guide](https://docs.n8n.io/integrat
 **Self-hosted n8n** — install from npm:
 
 ```bash
-npm install n8n-nodes-planka-v2
+npm install n8n-nodes-planka-kanban
 ```
 
-Or search for **Planka** in **Settings → Community nodes** and install `n8n-nodes-planka-v2`.
+Or search for **Planka** in **Settings → Community nodes** and install `n8n-nodes-planka-kanban`.
 
-> **Note:** This package replaces the earlier community node [`n8n-nodes-plankav2`](https://www.npmjs.com/package/n8n-nodes-plankav2) (v0.x, partial API coverage). Use `n8n-nodes-planka-v2` for full Planka v2 API support.
+> **Note:** This package replaces the earlier community node [`n8n-nodes-plankav2`](https://www.npmjs.com/package/n8n-nodes-plankav2) (v0.x, partial API coverage). Use `n8n-nodes-planka-kanban` for full Planka v2 API support.
 
 ## Credentials
 
