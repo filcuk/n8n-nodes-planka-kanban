@@ -1,19 +1,30 @@
 {
-	"name": "n8n-nodes-plankav2",
-	"version": "0.1.5",
-	"description": "Community Node for Planka",
+	"name": "n8n-nodes-planka-kanban",
+	"version": "1.0.0",
+	"description": "n8n community node for Planka v2 — full API coverage for boards, cards, custom fields, users, and more",
 	"license": "MIT",
-	"homepage": "",
+	"homepage": "https://github.com/filcuk/n8n-nodes-planka-v2#readme",
+	"bugs": {
+		"url": "https://github.com/filcuk/n8n-nodes-planka-v2/issues"
+	},
 	"keywords": [
-		"n8n-community-node-package"
+		"n8n-community-node-package",
+		"n8n",
+		"planka",
+		"kanban",
+		"project-management",
+		"automation"
 	],
 	"author": {
-		"name": "Jackson",
-		"email": "jackson26594916@gmail.com"
+		"name": "filcuk",
+		"url": "https://www.npmjs.com/~filcuk"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/jackson085/n8n-nodes-planka.git"
+		"url": "git+https://github.com/filcuk/n8n-nodes-planka-v2.git"
+	},
+	"engines": {
+		"node": ">=22"
 	},
 	"scripts": {
 		"build": "n8n-node build",
@@ -21,6 +32,7 @@
 		"dev": "n8n-node dev",
 		"lint": "n8n-node lint",
 		"lint:fix": "n8n-node lint --fix",
+		"prepublishOnly": "npm run build && npm run lint",
 		"release": "n8n-node release"
 	},
 	"files": [

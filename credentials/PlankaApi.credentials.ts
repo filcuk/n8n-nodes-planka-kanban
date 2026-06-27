@@ -1,53 +1,89 @@
 import {
-    ICredentialTestRequest,
-    ICredentialType,
-    INodeProperties,
-    Icon,
+	ICredentialTestRequest,
+	ICredentialType,
+	IHttpRequestMethods,
+	INodeProperties,
+	Icon,
 } from 'n8n-workflow';
 
 export class PlankaApi implements ICredentialType {
-    name = 'plankaApi';
-    displayName = 'Planka API';
-    documentationUrl = 'https://github.com/plankanban/planka';
-    icon: Icon = { light: 'file:../icons/planka.svg', dark: 'file:../icons/planka.dark.svg' };
+	name = 'plankaApi';
+	displayName = 'Planka API';
+	documentationUrl = 'https://github.com/plankanban/planka';
+	icon: Icon = { light: 'file:../icons/planka.svg', dark: 'file:../icons/planka.dark.svg' };
 
-    // Define the fields
-    properties: INodeProperties[] = [
-        {
-            displayName: 'Base URL',
-            name: 'baseUrl',
-            type: 'string',
-            default: 'http://192.168.178.26:3001/',
-            description: 'The URL of your Planka instance (e.g. http://localhost:3000)',
-        },
-        {
-            displayName: 'Email or Username',
-            name: 'emailOrUsername',
-            type: 'string',
-            default: 'demo@demo.demo',
-        },
-        {
-            displayName: 'Password',
-            name: 'password',
-            type: 'string',
-            typeOptions: {
-                password: true,
-            },
-            default: 'Jack',
-        },
-    ];
+	properties: INodeProperties[] = [
+		{
+			displayName: 'Base URL',
+			name: 'baseUrl',
+			type: 'string',
+			default: 'http://localhost:3000',
+			description: 'The URL of your Planka instance (e.g. http://localhost:3000)',
+		},
+		{
+			displayName: 'Authentication',
+			name: 'authentication',
+			type: 'options',
+			options: [
+				{ name: 'Email and Password', value: 'password' },
+				{ name: 'API Key', value: 'apiKey' },
+			],
+			default: 'password',
+		},
+		{
+			displayName: 'Email or Username',
+			name: 'emailOrUsername',
+			type: 'string',
+			default: '',
+			displayOptions: {
+				show: {
+					authentication: ['password'],
+				},
+			},
+		},
+		{
+			displayName: 'Password',
+			name: 'password',
+			type: 'string',
+			typeOptions: {
+				password: true,
+			},
+			default: '',
+			displayOptions: {
+				show: {
+					authentication: ['password'],
+				},
+			},
+		},
+		{
+			displayName: 'API Key',
+			name: 'apiKey',
+			type: 'string',
+			typeOptions: {
+				password: true,
+			},
+			default: '',
+			displayOptions: {
+				show: {
+					authentication: ['apiKey'],
+				},
+			},
+			description: 'User API key (X-Api-Key header). Create via User → Create API Key.',
+		},
+	];
 
-    test: ICredentialTestRequest = {
-        request: {
-            // We use the baseUrl provided by the user
-            baseURL: '={{$credentials.baseUrl}}',
-            // We try to login. If 200 OK, test passes. If 401/403, test fails.
-            url: '/api/access-tokens',
-            method: 'POST',
-            body: {
-                emailOrUsername: '={{$credentials.emailOrUsername}}',
-                password: '={{$credentials.password}}',
-            },
-        },
-    };
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: '={{$credentials.baseUrl.replace(/\\/$/, "")}}',
+			url: '={{$credentials.authentication === "apiKey" ? "/api/bootstrap" : "/api/access-tokens"}}',
+			method: '={{$credentials.authentication === "apiKey" ? "GET" : "POST"}}' as IHttpRequestMethods,
+			headers: {
+				'X-Api-Key': '={{$credentials.authentication === "apiKey" ? $credentials.apiKey : undefined}}',
+			},
+			body: {
+				emailOrUsername: '={{$credentials.authentication === "password" ? $credentials.emailOrUsername : undefined}}',
+				password: '={{$credentials.authentication === "password" ? $credentials.password : undefined}}',
+			},
+		},
+	};
 }
