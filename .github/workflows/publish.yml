@@ -31,7 +31,7 @@ jobs:
         run: |
           npm pkg set name="@filcuk/n8n-nodes-planka-kanban"
           npm pkg set publishConfig.registry="https://npm.pkg.github.com"
-          npm pkg set repository="https://github.com/filcuk/n8n-nodes-planka-v2"
+          npm pkg set repository="https://github.com/filcuk/n8n-nodes-planka-v2.git"
           node <<'EOF'
           const fs = require('fs');
           const lockPath = 'package-lock.json';
@@ -42,13 +42,37 @@ jobs:
           }
           fs.writeFileSync(lockPath, `${JSON.stringify(lock, null, '\t')}\n`);
           EOF
-          echo "Publishing package:"
-          node -pe "JSON.stringify({ name: require('./package.json').name, version: require('./package.json').version, registry: require('./package.json').publishConfig?.registry, repository: require('./package.json').repository }, null, 2)"
+          echo "Package manifest:"
+          node -pe "JSON.stringify(require('./package.json'), null, 2)"
+          echo "Tarball contents:"
+          npm pack --dry-run
 
       - name: Publish to GitHub Packages
         run: npm publish --registry=https://npm.pkg.github.com
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify GitHub Packages publish
+        run: |
+          VERSION=$(node -pe "require('./package.json').version")
+          npm view "@filcuk/n8n-nodes-planka-kanban@${VERSION}" version --registry=https://npm.pkg.github.com
+          echo "Published @filcuk/n8n-nodes-planka-kanban@${VERSION} to GitHub Packages"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish summary
+        run: |
+          VERSION=$(node -pe "require('./package.json').version")
+          {
+            echo "### GitHub Packages"
+            echo ""
+            echo "Published \`@filcuk/n8n-nodes-planka-kanban@${VERSION}\`"
+            echo ""
+            echo "- Package page: https://github.com/users/filcuk/packages/npm/package/n8n-nodes-planka-kanban"
+            echo "- Repo packages: https://github.com/filcuk/n8n-nodes-planka-v2/packages"
+            echo ""
+            echo "If the package does not appear under the repository, open the package page → **Package settings** → **Manage Actions access** / **Connect repository** and link \`filcuk/n8n-nodes-planka-v2\`."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish to npm
         run: |
@@ -58,6 +82,7 @@ jobs:
           fi
           npm pkg set name="n8n-nodes-planka-kanban"
           npm pkg delete publishConfig
+          npm pkg set repository="https://github.com/filcuk/n8n-nodes-planka-v2.git"
           node <<'EOF'
           const fs = require('fs');
           const lockPath = 'package-lock.json';
