@@ -30,7 +30,7 @@ export const taskProperties: INodeProperties[] = [
 		name: 'assigneeUserId',
 		type: 'string',
 		default: '',
-		displayOptions: { show: { resource: ['task'], operation: ['create', 'update'] } },
+		displayOptions: { show: { resource: ['task'], operation: ['update'] } },
 	},
 ];
 
@@ -52,7 +52,6 @@ export async function executeTask(
 					name: ctx.getNodeParameter('name', itemIndex) as string,
 					position: ctx.getNodeParameter('position', itemIndex) as number,
 					isCompleted: ctx.getNodeParameter('isCompleted', itemIndex) as boolean,
-					assigneeUserId: ctx.getNodeParameter('assigneeUserId', itemIndex) as string,
 				}),
 			}),
 		};

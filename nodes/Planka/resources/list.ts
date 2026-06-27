@@ -41,7 +41,7 @@ export const listProperties: INodeProperties[] = [
 		type: 'options',
 		options: listColorOptions,
 		default: 'berry-red',
-		displayOptions: { show: { resource: ['list'], operation: ['create', 'update'] } },
+		displayOptions: { show: { resource: ['list'], operation: ['update'] } },
 	},
 	{
 		displayName: 'Sort Field',
@@ -87,7 +87,6 @@ export async function executeList(
 					name: ctx.getNodeParameter('name', itemIndex),
 					position: ctx.getNodeParameter('position', itemIndex),
 					type: ctx.getNodeParameter('listType', itemIndex),
-					color: ctx.getNodeParameter('color', itemIndex),
 				},
 			}),
 		};
