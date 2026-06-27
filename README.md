@@ -111,6 +111,10 @@ npm publish
 
 ## Version history
 
+### 1.1.0
+
+- Add position parameter to Label create and update operations (default: 65536)
+
 ### 1.0.0
 
 - Full Planka v2 API coverage (100 endpoints)
