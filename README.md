@@ -111,6 +111,10 @@ npm publish
 
 ## Version history
 
+### 1.1.2
+
+- Add position parameter to Label create and update operations (default: 65536)
+
 ### 1.1.1
 
 - Fix schema mismatches: remove unsupported fields from list create and task create
