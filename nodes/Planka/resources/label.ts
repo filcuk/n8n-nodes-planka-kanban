@@ -1,6 +1,6 @@
 import type { INodeProperties, IExecuteFunctions  } from 'n8n-workflow';
 
-import { idField, labelColorOptions, nameField, operationField, positionField } from '../descriptions/shared';
+import { idField, labelColorOptions, nameField, operationField } from '../descriptions/shared';
 import { plankaRequest } from '../transport/request';
 import type { PlankaAuth, PlankaExecuteResult } from '../types';
 
@@ -20,7 +20,6 @@ export const labelProperties: INodeProperties[] = [
 	idField('Card ID', 'cardId', 'label', ['addToCard', 'removeFromCard']),
 	idField('Label ID', 'labelId', 'label', ['addToCard', 'delete', 'update', 'removeFromCard']),
 	nameField(['label'], ['create', 'update']),
-	positionField(['label'], ['create', 'update']),
 	{
 		displayName: 'Color',
 		name: 'color',
@@ -48,7 +47,7 @@ export async function executeLabel(
 				body: {
 					name: ctx.getNodeParameter('name', itemIndex),
 					color: ctx.getNodeParameter('color', itemIndex),
-					position: ctx.getNodeParameter('position', itemIndex) as number,
+					position: 65536,
 				},
 			}),
 		};
@@ -100,7 +99,7 @@ export async function executeLabel(
 				body: {
 					name: ctx.getNodeParameter('name', itemIndex),
 					color: ctx.getNodeParameter('color', itemIndex),
-					position: ctx.getNodeParameter('position', itemIndex) as number,
+					position: 65536,
 				},
 			}),
 		};

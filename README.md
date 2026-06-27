@@ -111,9 +111,10 @@ npm publish
 
 ## Version history
 
-### 1.1.0
+### 1.1.1
 
-- Add position parameter to Label create and update operations (default: 65536)
+- Fix schema mismatches: remove unsupported fields from list create and task create
+- Align node parameters with Planka OpenAPI spec
 
 ### 1.0.0
 
