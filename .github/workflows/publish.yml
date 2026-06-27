@@ -3,47 +3,72 @@ name: Publish
 on:
   release:
     types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
-  publish-github:
+  publish:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || github.ref }}
 
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           registry-url: 'https://npm.pkg.github.com'
           scope: '@filcuk'
+          always-auth: true
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Publish to GitHub Packages
+      - name: Configure package for GitHub Packages
         run: |
-          npm pkg set name=@filcuk/n8n-nodes-planka-kanban
-          npm publish
+          npm pkg set name="@filcuk/n8n-nodes-planka-kanban"
+          npm pkg set publishConfig.registry="https://npm.pkg.github.com"
+          npm pkg set repository="https://github.com/filcuk/n8n-nodes-planka-v2"
+          node <<'EOF'
+          const fs = require('fs');
+          const lockPath = 'package-lock.json';
+          const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
+          lock.name = '@filcuk/n8n-nodes-planka-kanban';
+          if (lock.packages?.['']) {
+            lock.packages[''].name = '@filcuk/n8n-nodes-planka-kanban';
+          }
+          fs.writeFileSync(lockPath, `${JSON.stringify(lock, null, '\t')}\n`);
+          EOF
+          echo "Publishing package:"
+          node -pe "JSON.stringify({ name: require('./package.json').name, version: require('./package.json').version, registry: require('./package.json').publishConfig?.registry, repository: require('./package.json').repository }, null, 2)"
+
+      - name: Publish to GitHub Packages
+        run: npm publish --registry=https://npm.pkg.github.com
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  publish-npm:
-    runs-on: ubuntu-latest
-    if: ${{ secrets.NPM_TOKEN != '' }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Install dependencies
-        run: npm ci
-
       - name: Publish to npm
-        run: npm publish --access public
+        run: |
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "NPM_TOKEN secret is not set — skipping npm publish."
+            exit 0
+          fi
+          npm pkg set name="n8n-nodes-planka-kanban"
+          npm pkg delete publishConfig
+          node <<'EOF'
+          const fs = require('fs');
+          const lockPath = 'package-lock.json';
+          const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
+          lock.name = 'n8n-nodes-planka-kanban';
+          if (lock.packages?.['']) {
+            lock.packages[''].name = 'n8n-nodes-planka-kanban';
+          }
+          fs.writeFileSync(lockPath, `${JSON.stringify(lock, null, '\t')}\n`);
+          EOF
+          npm publish --access public --registry=https://registry.npmjs.org
         env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

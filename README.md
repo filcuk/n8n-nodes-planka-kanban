@@ -106,6 +106,14 @@ Publishing runs when you [create a GitHub Release](https://docs.github.com/en/re
 
 To enable npm publishing from CI, add an [npm access token](https://docs.npmjs.com/creating-and-viewing-access-tokens) as the `NPM_TOKEN` secret in **Settings → Secrets and variables → Actions**.
 
+If GitHub Packages publish succeeds but you do not see the package, check:
+
+1. **Actions log** — open the **Publish → publish-github** job and confirm `Publish to GitHub Packages` succeeded (not just the workflow starting).
+2. **Package visibility** — new packages may be private. Open [your packages](https://github.com/filcuk?tab=packages), select `n8n-nodes-planka-kanban`, then **Package settings → Change visibility** if needed.
+3. **Re-run** — use **Actions → Publish → Run workflow** (manual dispatch) or publish a new release after merging workflow fixes.
+
+`publish-github` publishes `@filcuk/n8n-nodes-planka-kanban`. The unscoped `n8n-nodes-planka-kanban` name remains for npm.
+
 ### Manual
 
 ```bash
