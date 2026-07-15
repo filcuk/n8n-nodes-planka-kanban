@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-planka-kanban",
-	"version": "1.1.2",
+	"version": "1.1.3",
 	"description": "n8n community node for Planka v2 — full API coverage for boards, cards, custom fields, users, and more",
 	"license": "MIT",
 	"homepage": "https://github.com/filcuk/n8n-nodes-planka-v2#readme",

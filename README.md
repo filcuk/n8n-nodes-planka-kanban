@@ -139,6 +139,10 @@ npm publish --registry=https://npm.pkg.github.com
 
 ## Version history
 
+### 1.1.3
+
+- Fix file attachment uploads: send real multipart/form-data with boundary (no external deps)
+
 ### 1.1.2
 
 - Add position parameter to Label create and update operations (default: 65536)
